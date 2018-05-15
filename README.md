@@ -5,4 +5,4 @@ This project is based on [xuzhe](https://github.com/xuzhe35)'s project [TWS-Prox
 ## Requirements
 
 - .Net Framework 4.5.2
-- TWS API 9.7.1
+- TWS API 9.7.2
