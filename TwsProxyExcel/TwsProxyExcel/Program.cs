@@ -20,10 +20,17 @@ namespace TwsProxyExcel
         public IB_Client client = new IB_Client();
         [STAThread]
 
-        public bool Connect()
+        public bool Connect(string host, int port=7496)
         {
-            bool ret = client.ConnectToTWS("127.0.0.1", 7496);
+            bool ret = client.ConnectToTWS(host, Port:port);
             return ret;
+        }
+        public bool Connect(string host, string port="7496")
+        {
+            Int32 _port;
+            if (Int32.TryParse(port, out _port))
+                return Connect(host, _port);
+            return false;
         }
         public bool IsConnected()
         {
@@ -41,15 +48,15 @@ namespace TwsProxyExcel
         }
         static void Main()
         {
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new Form1());
             IB_Client client = new IB_Client();
             bool ret = client.ConnectToTWS("127.0.0.1", 7496);
             if (ret)
             {
                 Console.WriteLine("connect successful.");
             }
+
+            client = new IB_Client();
+            client.ConnectToTWS("127.0.0.1", 7496);
             //client.DefaultAccout = "DU229332";
             string acc_id = client.DefaultAccout;
             Console.WriteLine(acc_id);

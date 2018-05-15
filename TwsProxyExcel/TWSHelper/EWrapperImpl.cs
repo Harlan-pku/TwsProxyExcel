@@ -39,7 +39,7 @@ namespace TWSHelper
         public virtual void error(Exception e)
         {
             Console.WriteLine("Exception thrown: " + e);
-            throw e;
+            //throw e;
         }
 
         public virtual void error(string str)

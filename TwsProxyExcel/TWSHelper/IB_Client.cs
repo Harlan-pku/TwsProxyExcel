@@ -39,6 +39,8 @@ namespace TWSHelper
 
         protected int currentTicker = 1;
         private int OrderID = 5000;
+        private string Host = "";
+        private Int32 Port = 0;
 
         /// <summary>
         /// 是否已经连接了TWS
@@ -65,6 +67,15 @@ namespace TWSHelper
         public IB_Client()
         {
             wrapper.parent_client = this;
+        }
+        
+        ~IB_Client()
+        {
+            if (IsConnected)
+            {
+                Console.WriteLine("disconnecting");
+                Disconnect();
+            }
         }
 
         /// <summary>
@@ -119,13 +130,24 @@ namespace TWSHelper
         /// <returns>如果成功连接返回true，否则返回false</returns>
         public bool ConnectToTWS(string IP_Address, int Port)
         {
+            if (IP_Address == Host && Port == this.Port && IsConnected)
+            {
+                return true;
+            }
+            else if (IsConnected)
+            {
+                Disconnect();
+            }
             try
             {
                 wrapper.ClientSocket.eConnect(IP_Address, Port, 0, false);
                 while (wrapper.NextOrderId <= 0) { }
 
-                wrapper.NextOrderId = 2000;
+                //wrapper.NextOrderId = 2000;
+                OrderID = wrapper.NextOrderId;
                 IsConnected = true;
+                this.Port = Port;
+                this.Host = IP_Address;
 
                 return true;
             }
@@ -143,6 +165,7 @@ namespace TWSHelper
         public void Disconnect()
         {
             wrapper.ClientSocket.eDisconnect();
+            IsConnected = false;
         }
 
         /// <summary>
