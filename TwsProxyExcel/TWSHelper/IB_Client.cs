@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using IBApi;
@@ -45,7 +46,10 @@ namespace TWSHelper
         /// <summary>
         /// 是否已经连接了TWS
         /// </summary>
-        public bool IsConnected { get; set; }
+        public bool IsConnected()
+        {
+            return wrapper.ClientSocket.IsConnected();
+        }
 
         public string DefaultAccout { get; set; }
 
@@ -71,7 +75,7 @@ namespace TWSHelper
         
         ~IB_Client()
         {
-            if (IsConnected)
+            if (IsConnected())
             {
                 Console.WriteLine("disconnecting");
                 Disconnect();
@@ -130,22 +134,29 @@ namespace TWSHelper
         /// <returns>如果成功连接返回true，否则返回false</returns>
         public bool ConnectToTWS(string IP_Address, int Port)
         {
-            if (IP_Address == Host && Port == this.Port && IsConnected)
+            if (IP_Address == Host && Port == this.Port && IsConnected())
             {
                 return true;
             }
-            else if (IsConnected)
+            else if (IsConnected())
             {
                 Disconnect();
             }
             try
             {
                 wrapper.ClientSocket.eConnect(IP_Address, Port, 0, false);
+                EClientSocket clientSocket = wrapper.ClientSocket;
+                EReaderSignal readerSignal = wrapper.Signal;
+                //Create a reader to consume messages from the TWS. The EReader will consume the incoming messages and put them in a queue
+                var reader = new EReader(clientSocket, readerSignal);
+                reader.Start();
+                //Once the messages are in the queue, an additional thread need to fetch them
+                new Thread(() => { while (clientSocket.IsConnected()) { readerSignal.waitForSignal(); reader.processMsgs(); } }) { IsBackground = true }.Start();
                 while (wrapper.NextOrderId <= 0) { }
 
                 //wrapper.NextOrderId = 2000;
                 OrderID = wrapper.NextOrderId;
-                IsConnected = true;
+                //IsConnected = true;
                 this.Port = Port;
                 this.Host = IP_Address;
 
@@ -165,7 +176,7 @@ namespace TWSHelper
         public void Disconnect()
         {
             wrapper.ClientSocket.eDisconnect();
-            IsConnected = false;
+            //IsConnected = false;
         }
 
         /// <summary>
@@ -177,7 +188,7 @@ namespace TWSHelper
         {
             try
             {
-                if (IsConnected)
+                if (IsConnected())
                 {
                     //检测是否已经订阅了
                     if (!SubscribedAssets.Exists((a) => a.AssetID == asset.AssetID))
@@ -248,6 +259,11 @@ namespace TWSHelper
         public int add(string strAssetID, string Exchange, string Currency)
         {
             return SubscribeMarketData(strAssetID, Exchange, Currency);
+        }
+
+        public string orderStatus(int orderID)
+        {
+            return wrapper.getOrderInfo(orderID);
         }
 
         #region response of IB API call
@@ -357,12 +373,12 @@ namespace TWSHelper
         /// <param name="strAssetID">资产ID</param>
         /// <param name="quantity">数量</param>
         /// <returns>返回一个OrderID</returns>
-        public int Buy(string strAssetID,int quantity)
+        public int Buy(string strAssetID, int quantity)
         {
             Contract contract = GetContractByAssetID(strAssetID);
             int ret_OrderID = -1;
 
-            if(IsConnected)
+            if(IsConnected())
             {
                 Order order = new Order();
                 order.Action = "BUY";
@@ -371,10 +387,10 @@ namespace TWSHelper
 
                 if (!string.IsNullOrEmpty(DefaultAccout))
                     order.Account = DefaultAccout;
-
-                wrapper.ClientSocket.placeOrder(OrderID, contract, order);
                 ret_OrderID = OrderID;
 
+                Console.WriteLine(OrderID);
+                wrapper.ClientSocket.placeOrder(OrderID, contract, order);
                 OrderID++;
 
                 return ret_OrderID;
@@ -391,12 +407,12 @@ namespace TWSHelper
         /// <param name="strAssetID">资产ID</param>
         /// <param name="quanity">数量</param>
         /// <returns>返回一个OrderID</returns>
-        public int Sell(string strAssetID,int quantity)
+        public int Sell(string strAssetID, int quantity)
         {
             Contract contract = GetContractByAssetID(strAssetID);
             int ret_OrderID = -1;
 
-            if (IsConnected)
+            if (IsConnected())
             {
                 Order order = new Order();
                 order.Action = "SELL";
@@ -424,7 +440,7 @@ namespace TWSHelper
             Contract contract = GetContractByAssetID(strAssetID);
             int ret_OrderID = -1;
 
-            if (IsConnected)
+            if (IsConnected())
             {
                 Order order = new Order();
                 order.Action = "BUY";
@@ -453,7 +469,7 @@ namespace TWSHelper
             Contract contract = GetContractByAssetID(strAssetID);
             int ret_OrderID = -1;
 
-            if (IsConnected)
+            if (IsConnected())
             {
                 Order order = new Order();
                 order.Action = "SELL";

@@ -34,7 +34,7 @@ namespace TwsProxyExcel
         }
         public bool IsConnected()
         {
-            return client.IsConnected;
+            return client.IsConnected();
         }
         public int BuyTest()
         {
@@ -44,7 +44,7 @@ namespace TwsProxyExcel
         }
         public string GetBuyStatus()
         {
-            return client.wrapper.orderInfo;
+            return client.orderStatus(0);
         }
         static void Main()
         {
@@ -55,8 +55,8 @@ namespace TwsProxyExcel
                 Console.WriteLine("connect successful.");
             }
 
-            client = new IB_Client();
-            client.ConnectToTWS("127.0.0.1", 7496);
+            //client = new IB_Client();
+            //client.ConnectToTWS("127.0.0.1", 7496);
             //client.DefaultAccout = "DU229332";
             string acc_id = client.DefaultAccout;
             Console.WriteLine(acc_id);
@@ -69,10 +69,16 @@ namespace TwsProxyExcel
 
             //var ask_size = es.Ask_Size;
             //var bid_size = es.Bid_Size;
-            client.Buy("AAPL", 1000);
+            int a = 2;
+            while (a-->1)
+            {
+                client.Buy("AAPL", 1000);
+                //Console.ReadKey();
+                Thread.Sleep(1000);
+            }
             Thread.Sleep(1000);
-            string str = client.wrapper.orderInfo;
-            Console.WriteLine(str);
+            //string str = client.wrapper.orderInfo;
+            //Console.WriteLine(str);
             Thread.Sleep(3000);
             client.Disconnect();
             Console.ReadKey();

@@ -27,7 +27,7 @@ namespace TWSHelper
             contract.SecType = "FUT";
             contract.Exchange = strExchange;
             contract.Currency = strCurrency;
-            contract.Expiry = strExpiry;
+            //contract.Expiry = strExpiry;
 
             return contract;
         }
@@ -65,7 +65,7 @@ namespace TWSHelper
             contract.Strike = Strike;
             contract.Right = strRight;
             contract.Currency = strCurrency;
-            contract.Expiry = strExpiry;
+            //contract.Expiry = strExpiry;
             contract.Exchange = strExchange;
 
             return contract;
@@ -80,7 +80,7 @@ namespace TWSHelper
             contract.Strike = Strike;
             contract.Right = strRight;
             contract.Currency = strCurrency;
-            contract.Expiry = strExpiry;
+            //contract.Expiry = strExpiry;
             contract.Exchange = strExchange;
 
             contract.Multiplier = "100";

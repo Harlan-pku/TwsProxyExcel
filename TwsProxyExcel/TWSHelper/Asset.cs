@@ -49,17 +49,17 @@ namespace TWSHelper
             else if (theContract.SecType == "FUT")
             {
                 Type = ContractType.FUT;
-                AssetID = string.Format("{0}.{1}", theContract.Symbol, theContract.Expiry);
+                //AssetID = string.Format("{0}.{1}", theContract.Symbol, theContract.Expiry);
             }
             else if (theContract.SecType == "OPT")
             {
                 Type = ContractType.OPT;
-                AssetID = string.Format("OPT.{0}.{1}.{2}.{3}", theContract.Symbol, theContract.Expiry, theContract.Right, theContract.Strike.ToString());
+                //AssetID = string.Format("OPT.{0}.{1}.{2}.{3}", theContract.Symbol, theContract.Expiry, theContract.Right, theContract.Strike.ToString());
             }
             else if (theContract.SecType == "FOP")
             {
                 Type = ContractType.FOP;
-                AssetID = string.Format("FOP.{0}.{1}.{2}.{3}", theContract.Symbol, theContract.Expiry, theContract.Right, theContract.Strike.ToString());
+                //AssetID = string.Format("FOP.{0}.{1}.{2}.{3}", theContract.Symbol, theContract.Expiry, theContract.Right, theContract.Strike.ToString());
             }
             else if (theContract.SecType == "CFD")
             {
