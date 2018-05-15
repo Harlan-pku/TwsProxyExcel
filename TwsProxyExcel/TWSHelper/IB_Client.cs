@@ -43,6 +43,7 @@ namespace TWSHelper
         private string Host = "";
         private Int32 Port = 0;
 
+
         /// <summary>
         /// 是否已经连接了TWS
         /// </summary>
@@ -380,10 +381,11 @@ namespace TWSHelper
 
             if(IsConnected())
             {
-                Order order = new Order();
-                order.Action = "BUY";
-                order.OrderType = "MKT";
-                order.TotalQuantity = quantity;
+                Order order = OrderHelper.MarketOrder("BUY", quantity);
+                //Order order = new Order();
+                //order.Action = "BUY";
+                //order.OrderType = "MKT";
+                //order.TotalQuantity = quantity;
 
                 if (!string.IsNullOrEmpty(DefaultAccout))
                     order.Account = DefaultAccout;
@@ -414,10 +416,10 @@ namespace TWSHelper
 
             if (IsConnected())
             {
-                Order order = new Order();
-                order.Action = "SELL";
-                order.OrderType = "MKT";
-                order.TotalQuantity = quantity;
+                Order order = OrderHelper.MarketOrder("SELL", quantity);
+                //order.Action = "SELL";
+                //order.OrderType = "MKT";
+                //order.TotalQuantity = quantity;
 
                 if (!string.IsNullOrEmpty(DefaultAccout))
                     order.Account = DefaultAccout;
@@ -435,62 +437,20 @@ namespace TWSHelper
             }
         }
 
-        public int BuyLMT(string strAssetID,int quantity, double price)
+        public int PlaceLimitOrder(string strAssetID, string action, int quantity, double price)
         {
-            Contract contract = GetContractByAssetID(strAssetID);
-            int ret_OrderID = -1;
-
-            if (IsConnected())
-            {
-                Order order = new Order();
-                order.Action = "BUY";
-                order.OrderType = "LMT";
-                order.LmtPrice = price;
-                order.TotalQuantity = quantity;
-
-                if (!string.IsNullOrEmpty(DefaultAccout))
-                    order.Account = DefaultAccout;
-
-                wrapper.ClientSocket.placeOrder(OrderID, contract, order);
-                ret_OrderID = OrderID;
-
-                OrderID++;
-
-                return ret_OrderID;
-            }
-            else
-            {
-                return -1;
-            }
+            Order order = OrderHelper.LimitOrder(action, quantity, price);
+            return PlaceOrder(strAssetID, order);             
         }
 
-        public int SellLMT(string strAssetID,int quantity, double price)
+        public int BuyLimitOrder(string strAssetID, int quantity, double limitPrice)
         {
-            Contract contract = GetContractByAssetID(strAssetID);
-            int ret_OrderID = -1;
+            return PlaceLimitOrder(strAssetID, "BUY", quantity, limitPrice);
+        }
 
-            if (IsConnected())
-            {
-                Order order = new Order();
-                order.Action = "SELL";
-                order.OrderType = "LMT";
-                order.LmtPrice = price;
-                order.TotalQuantity = quantity;
-
-                if (!string.IsNullOrEmpty(DefaultAccout))
-                    order.Account = DefaultAccout;
-
-                wrapper.ClientSocket.placeOrder(OrderID, contract, order);
-                ret_OrderID = OrderID;
-
-                OrderID++;
-
-                return ret_OrderID;
-            }
-            else
-            {
-                return -1;
-            }
+        public int SellLimitOrder(string strAssetID, int quantity, double limitPrice)
+        {
+            return PlaceLimitOrder(strAssetID, "SELL", quantity, limitPrice);
         }
 
         public void CancelOrder(int OrderId)
@@ -501,6 +461,41 @@ namespace TWSHelper
         public void CancelAllOrders()
         {
             wrapper.ClientSocket.reqGlobalCancel();
+        }
+
+        private int PlaceOrder(string strAssetID, Order order)
+        {
+            if (!IsConnected())
+                return -1;
+            Contract contract = GetContractByAssetID(strAssetID);
+            if (!string.IsNullOrEmpty(DefaultAccout))
+                order.Account = DefaultAccout;
+            wrapper.ClientSocket.placeOrder(OrderID, contract, order);
+            return OrderID++;
+        }
+
+        public int PlaceAtAuction(string strAssetID, string action, double quantity, double price)
+        {
+            Order order = OrderHelper.AtAuction(action, quantity, price);
+            return PlaceOrder(strAssetID, order);
+        }
+
+        public int PlaceDiscretionary(string strAssetID, string action, double quantity, double price, double discretionaryAmount)
+        {
+            Order order = OrderHelper.Discretionary(action, quantity, price, discretionaryAmount);
+            return PlaceOrder(strAssetID, order);
+        }
+
+        public int PlaceMarketOrder(string strAssetID, string action, double quantity)
+        {
+            Order order = OrderHelper.MarketOrder(action, quantity);
+            return PlaceOrder(strAssetID, order);
+        }
+
+        public int PlaceMarketIfTouched(string strAssetID, string action, double quantity, double price)
+        {
+            Order order = OrderHelper.MarketIfTouched(action, quantity, price);
+            return PlaceOrder(strAssetID, order);
         }
     }
 }

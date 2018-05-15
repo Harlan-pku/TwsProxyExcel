@@ -381,6 +381,12 @@ namespace TWSHelper
         private Dictionary<int, string> orderInfo = new Dictionary<int, string>();
         private Dictionary<int, string> orderErrorInfo = new Dictionary<int, string>();
 
+        public string accountsList;
+        //{
+        //    get { return accoutsList;  }
+        //    set { accoutsList = value;  }
+        //}
+
         //! [socket_init]
         public EWrapperImpl()
         {
@@ -501,6 +507,7 @@ namespace TWSHelper
         //! [managedaccounts]
         public virtual void managedAccounts(string accountsList)
         {
+            this.accountsList = accountsList;
             Console.WriteLine("Account list: " + accountsList);
         }
         //! [managedaccounts]

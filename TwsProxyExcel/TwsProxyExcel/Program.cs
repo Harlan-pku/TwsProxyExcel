@@ -79,7 +79,8 @@ namespace TwsProxyExcel
             Thread.Sleep(1000);
             //string str = client.wrapper.orderInfo;
             //Console.WriteLine(str);
-            Thread.Sleep(3000);
+            client.CancelAllOrders();
+            Thread.Sleep(10000);
             client.Disconnect();
             Console.ReadKey();
         }
