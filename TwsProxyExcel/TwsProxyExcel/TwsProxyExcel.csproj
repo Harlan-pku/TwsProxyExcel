@@ -49,6 +49,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\TWS API\source\CSharpClient\client\CSharpAPI.csproj">
+      <Project>{8ede0744-96c2-40b0-a8dc-37df79370203}</Project>
+      <Name>CSharpAPI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TWSHelper\TWSHelper.csproj">
       <Project>{dca56012-7fc9-4704-9b45-2b4f3b561da6}</Project>
       <Name>TWSHelper</Name>

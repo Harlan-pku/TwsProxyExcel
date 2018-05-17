@@ -154,7 +154,7 @@ namespace TWSHelper
                 //Once the messages are in the queue, an additional thread need to fetch them
                 new Thread(() => { while (clientSocket.IsConnected()) { readerSignal.waitForSignal(); reader.processMsgs(); } }) { IsBackground = true }.Start();
                 while (wrapper.NextOrderId <= 0) { }
-
+                new Thread(() => { while (clientSocket.IsConnected()) { clientSocket.reqPositions(); Thread.Sleep(500); } }) { IsBackground = true }.Start();
                 //wrapper.NextOrderId = 2000;
                 OrderID = wrapper.NextOrderId;
                 //IsConnected = true;
@@ -247,6 +247,16 @@ namespace TWSHelper
             return SubscribeMarketData(newAsset);
         }
 
+        public string ReqPositions()
+        {
+            //wrapper.ClientSocket.reqPositions();
+            //while (wrapper.posInfoReady is false) { }
+            string tmp = wrapper.posInfo;
+            //wrapper.posInfo = "";
+            //wrapper.posInfoReady = false;
+            return tmp;
+        }
+
         public int add(string strAssetID)
         {
             return SubscribeMarketData(strAssetID);
@@ -265,6 +275,13 @@ namespace TWSHelper
         public string orderStatus(int orderID)
         {
             return wrapper.getOrderInfo(orderID);
+        }
+
+        public double OrderRemaining(int orderID)
+        {
+            if (wrapper.orderInfoDetail.ContainsKey(orderID))
+                return wrapper.orderInfoDetail[orderID].remaining;
+            return -1;
         }
 
         #region response of IB API call
@@ -468,6 +485,8 @@ namespace TWSHelper
             if (!IsConnected())
                 return -1;
             Contract contract = GetContractByAssetID(strAssetID);
+            if (contract == null)
+                return -1;
             if (!string.IsNullOrEmpty(DefaultAccout))
                 order.Account = DefaultAccout;
             wrapper.ClientSocket.placeOrder(OrderID, contract, order);

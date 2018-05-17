@@ -72,7 +72,7 @@ namespace TwsProxyExcel
             int a = 2;
             while (a-->1)
             {
-                client.Buy("AAPL", 1000);
+                client.BuyLimitOrder("AAPL", 1000, 170);
                 //Console.ReadKey();
                 Thread.Sleep(1000);
             }
@@ -80,7 +80,9 @@ namespace TwsProxyExcel
             //string str = client.wrapper.orderInfo;
             //Console.WriteLine(str);
             client.CancelAllOrders();
-            Thread.Sleep(10000);
+            client.wrapper.ClientSocket.reqPositions();
+            Console.WriteLine(client.ReqPositions());
+            Thread.Sleep(20000);
             client.Disconnect();
             Console.ReadKey();
         }
