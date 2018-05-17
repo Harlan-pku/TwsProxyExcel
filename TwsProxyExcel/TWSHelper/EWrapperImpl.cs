@@ -381,6 +381,7 @@ namespace TWSHelper
         private Dictionary<int, string> orderInfo = new Dictionary<int, string>();
         private Dictionary<int, string> orderErrorInfo = new Dictionary<int, string>();
         public Dictionary<int, OrderStatusReturnStruct> orderInfoDetail = new Dictionary<int, OrderStatusReturnStruct>();
+        public List<Execution> executions = new List<Execution>();
         public string posInfo = "";
         private string tmpPosInfo = "";
         public bool posInfoReady = false;
@@ -619,6 +620,7 @@ namespace TWSHelper
         //! [execdetails]
         public virtual void execDetails(int reqId, Contract contract, Execution execution)
         {
+            executions.Add(execution);
             Console.WriteLine("ExecDetails. " + reqId + " - " + contract.Symbol + ", " + contract.SecType + ", " + contract.Currency + " - " + execution.ExecId + ", " + execution.OrderId + ", " + execution.Shares);
         }
         //! [execdetails]
@@ -683,7 +685,7 @@ namespace TWSHelper
         public virtual void position(string account, Contract contract, double pos, double avgCost)
         {
             this.tmpPosInfo += "Position. " + account + " - Symbol: " + contract.Symbol + ", SecType: " + contract.SecType + ", Currency: " + contract.Currency + ", Position: " + pos + ", Avg cost: " + avgCost + '\n';
-            Console.WriteLine("Position. " + account + " - Symbol: " + contract.Symbol + ", SecType: " + contract.SecType + ", Currency: " + contract.Currency + ", Position: " + pos + ", Avg cost: " + avgCost);
+            //Console.WriteLine("Position. " + account + " - Symbol: " + contract.Symbol + ", SecType: " + contract.SecType + ", Currency: " + contract.Currency + ", Position: " + pos + ", Avg cost: " + avgCost);
         }
         //! [position]
 
@@ -693,7 +695,7 @@ namespace TWSHelper
             this.posInfo = this.tmpPosInfo.Substring(0, tmpPosInfo.Length - 1);
             this.tmpPosInfo = "";
             this.posInfoReady = true;
-            Console.WriteLine("PositionEnd \n");
+            //Console.WriteLine("PositionEnd \n");
         }
         //! [positionend]
 

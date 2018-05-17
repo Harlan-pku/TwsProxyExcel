@@ -82,6 +82,9 @@ namespace TwsProxyExcel
             client.CancelAllOrders();
             client.wrapper.ClientSocket.reqPositions();
             Console.WriteLine(client.ReqPositions());
+            Thread.Sleep(1000);
+            Console.WriteLine("Open Order Begin");
+            client.wrapper.ClientSocket.reqAllOpenOrders();
             Thread.Sleep(20000);
             client.Disconnect();
             Console.ReadKey();
