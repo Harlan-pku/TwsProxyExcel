@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TWSHelper
 {
-    class OrderStatusReturnStruct
+    public class OrderStatusReturnStruct
     {
         public int orderId;
         public string status;

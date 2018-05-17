@@ -393,31 +393,7 @@ namespace TWSHelper
         /// <returns>返回一个OrderID</returns>
         public int Buy(string strAssetID, int quantity)
         {
-            Contract contract = GetContractByAssetID(strAssetID);
-            int ret_OrderID = -1;
-
-            if(IsConnected())
-            {
-                Order order = OrderHelper.MarketOrder("BUY", quantity);
-                //Order order = new Order();
-                //order.Action = "BUY";
-                //order.OrderType = "MKT";
-                //order.TotalQuantity = quantity;
-
-                if (!string.IsNullOrEmpty(DefaultAccout))
-                    order.Account = DefaultAccout;
-                ret_OrderID = OrderID;
-
-                Console.WriteLine(OrderID);
-                wrapper.ClientSocket.placeOrder(OrderID, contract, order);
-                OrderID++;
-
-                return ret_OrderID;
-            }
-            else
-            {
-                return -1;
-            }
+            return BuyMarketOrder(strAssetID, quantity);
         }
 
         /// <summary>
@@ -428,30 +404,7 @@ namespace TWSHelper
         /// <returns>返回一个OrderID</returns>
         public int Sell(string strAssetID, int quantity)
         {
-            Contract contract = GetContractByAssetID(strAssetID);
-            int ret_OrderID = -1;
-
-            if (IsConnected())
-            {
-                Order order = OrderHelper.MarketOrder("SELL", quantity);
-                //order.Action = "SELL";
-                //order.OrderType = "MKT";
-                //order.TotalQuantity = quantity;
-
-                if (!string.IsNullOrEmpty(DefaultAccout))
-                    order.Account = DefaultAccout;
-
-                wrapper.ClientSocket.placeOrder(OrderID, contract, order);
-                ret_OrderID = OrderID;
-
-                OrderID++;
-
-                return ret_OrderID;
-            }
-            else
-            {
-                return -1;
-            }
+            return SellMarketOrder(strAssetID, quantity);
         }
 
         public int PlaceLimitOrder(string strAssetID, string action, int quantity, double price)
@@ -493,6 +446,22 @@ namespace TWSHelper
             return OrderID++;
         }
 
+        public int PlaceMarketOrder(string strAssetID, string action, double quantity)
+        {
+            Order order = OrderHelper.MarketOrder(action, quantity);
+            return PlaceOrder(strAssetID, order);
+        }
+
+        public int BuyMarketOrder(string strAssetID, double quantity)
+        {
+            return this.PlaceMarketOrder(strAssetID, "BUY", quantity);
+        }
+
+        public int SellMarketOrder(string strAssetID, double quantity)
+        {
+            return this.PlaceMarketOrder(strAssetID, "SELL", quantity);
+        }
+
         public int PlaceAtAuction(string strAssetID, string action, double quantity, double price)
         {
             Order order = OrderHelper.AtAuction(action, quantity, price);
@@ -505,15 +474,15 @@ namespace TWSHelper
             return PlaceOrder(strAssetID, order);
         }
 
-        public int PlaceMarketOrder(string strAssetID, string action, double quantity)
-        {
-            Order order = OrderHelper.MarketOrder(action, quantity);
-            return PlaceOrder(strAssetID, order);
-        }
-
         public int PlaceMarketIfTouched(string strAssetID, string action, double quantity, double price)
         {
             Order order = OrderHelper.MarketIfTouched(action, quantity, price);
+            return PlaceOrder(strAssetID, order);
+        }
+
+        public int PlaceMarketOnClose(string strAssetID, string action, double quantity)
+        {
+            Order order = OrderHelper.MarketOnClose(action, quantity);
             return PlaceOrder(strAssetID, order);
         }
     }

@@ -52,6 +52,7 @@
     <Compile Include="MKT_MESSAGE.cs" />
     <Compile Include="OrderHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReturnStruct.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\TWS API\source\CSharpClient\client\CSharpAPI.csproj">
