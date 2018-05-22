@@ -65,7 +65,7 @@ namespace TWSHelper
             contract.Strike = Strike;
             contract.Right = strRight;
             contract.Currency = strCurrency;
-            //contract.Expiry = strExpiry;
+            contract.LastTradeDateOrContractMonth = strExpiry;
             contract.Exchange = strExchange;
 
             return contract;
@@ -80,7 +80,7 @@ namespace TWSHelper
             contract.Strike = Strike;
             contract.Right = strRight;
             contract.Currency = strCurrency;
-            //contract.Expiry = strExpiry;
+            contract.LastTradeDateOrContractMonth = strExpiry;
             contract.Exchange = strExchange;
 
             contract.Multiplier = "100";

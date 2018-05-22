@@ -61,18 +61,19 @@ namespace TwsProxyExcel
             string acc_id = client.DefaultAccout;
             Console.WriteLine(acc_id);
             client.add("AAPL");
+            client.add("FOP.CL.201807.C.71", "NYMEX", "USD");
             //client.add("EURUSD");
-            //var es = client.get("ES.20180420");
+            var es = client.get("FOP.CL.201807.C.71");
 
-            //var ask = es.Ask;
-            //var bid = es.Bid;
+            var ask = es.Ask;
+            var bid = es.Bid;
 
-            //var ask_size = es.Ask_Size;
-            //var bid_size = es.Bid_Size;
+            var ask_size = es.Ask_Size;
+            var bid_size = es.Bid_Size;
             int a = 2;
             while (a-->1)
             {
-                client.BuyLimitOrder("AAPL", 1000, 170);
+                //client.BuyLimitOrder("AAPL", 1000, 170);
                 //Console.ReadKey();
                 Thread.Sleep(1000);
             }
@@ -80,8 +81,8 @@ namespace TwsProxyExcel
             //string str = client.wrapper.orderInfo;
             //Console.WriteLine(str);
             client.CancelAllOrders();
-            client.wrapper.ClientSocket.reqPositions();
-            Console.WriteLine(client.ReqPositions());
+            //client.wrapper.ClientSocket.reqPositions();
+            //Console.WriteLine(client.ReqPositions());
             Thread.Sleep(1000);
             Console.WriteLine("Open Order Begin");
             client.wrapper.ClientSocket.reqAllOpenOrders();
