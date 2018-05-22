@@ -274,7 +274,17 @@ namespace TWSHelper
 
         public string orderStatus(int orderID)
         {
-            return wrapper.getOrderInfo(orderID);
+            return wrapper.GetOrderInfo(orderID);
+        }
+
+        public string getExecutions()
+        {
+            return wrapper.GetExecutions();
+        }
+
+        public void reqTodayExecutions()
+        {
+            wrapper.ClientSocket.reqExecutions(1, new ExecutionFilter());
         }
 
         public double OrderRemaining(int orderID)

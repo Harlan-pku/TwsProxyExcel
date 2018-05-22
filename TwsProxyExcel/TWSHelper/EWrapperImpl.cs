@@ -381,7 +381,7 @@ namespace TWSHelper
         private Dictionary<int, string> orderInfo = new Dictionary<int, string>();
         private Dictionary<int, string> orderErrorInfo = new Dictionary<int, string>();
         public Dictionary<int, OrderStatusReturnStruct> orderInfoDetail = new Dictionary<int, OrderStatusReturnStruct>();
-        public List<Execution> executions = new List<Execution>();
+        public Dictionary<string, Tuple<Contract, Execution, int>> executions = new Dictionary<string, Tuple<Contract, Execution, int>>();
         public string posInfo = "";
         private string tmpPosInfo = "";
         public bool posInfoReady = false;
@@ -409,7 +409,7 @@ namespace TWSHelper
 
         public IB_Client parent_client;
 
-        public string getOrderInfo(int orderID)
+        public string GetOrderInfo(int orderID)
         {
             if (orderErrorInfo.ContainsKey(orderID))
             {
@@ -420,6 +420,18 @@ namespace TWSHelper
                 return orderInfo[orderID];
             }
             return "unavailable";
+        }
+
+        public string GetExecutions()
+        {
+            if (this.executions.Count == 0)
+                return "";
+            string ans = "";
+            foreach (var el in this.executions)
+            {
+                ans += el.Value.Item2.Time + ", " + el.Value.Item2.OrderId + ", " + el.Value.Item1.Symbol + ", " + el.Value.Item2.Side + ", " + el.Value.Item1.Currency + ", " + el.Value.Item3.ToString() + "\n";
+            }
+            return ans.Substring(0, ans.Length - 1);
         }
 
         public int NextOrderId
@@ -453,6 +465,7 @@ namespace TWSHelper
 
         public virtual void currentTime(long time)
         {
+
             Console.WriteLine("Current Time: " + time + "\n");
         }
 
@@ -620,7 +633,8 @@ namespace TWSHelper
         //! [execdetails]
         public virtual void execDetails(int reqId, Contract contract, Execution execution)
         {
-            executions.Add(execution);
+            var execution_tuple = new Tuple<Contract, Execution, int>(contract, execution, reqId);
+            executions[execution.ExecId] = execution_tuple;
             Console.WriteLine("ExecDetails. " + reqId + " - " + contract.Symbol + ", " + contract.SecType + ", " + contract.Currency + " - " + execution.ExecId + ", " + execution.OrderId + ", " + execution.Shares);
         }
         //! [execdetails]
