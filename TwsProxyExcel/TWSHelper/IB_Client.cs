@@ -195,7 +195,7 @@ namespace TWSHelper
                     if (!SubscribedAssets.Exists((a) => a.AssetID == asset.AssetID))
                     {
                         int ticker_id = TICK_ID_BASE + (currentTicker++);
-                        wrapper.ClientSocket.reqMktData(ticker_id, asset.IB_Contract, "", false, new List<TagValue>());
+                        wrapper.ClientSocket.reqMktData(ticker_id, asset.IB_Contract, "", false, false, new List<TagValue>());
 
                         dicAssetTickerID.Add(ticker_id, asset);
                         SubscribedAssets.Add(asset);

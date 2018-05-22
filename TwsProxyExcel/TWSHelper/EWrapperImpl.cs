@@ -440,6 +440,8 @@ namespace TWSHelper
             set { nextOrderId = value; }
         }
 
+        public string BboExchange { get; private set; }
+
         public virtual void error(Exception e)
         {
             Console.WriteLine("Exception thrown: " + e);
@@ -470,9 +472,10 @@ namespace TWSHelper
         }
 
         //! [tickprice]
-        public virtual void tickPrice(int tickerId, int field, double price, int canAutoExecute)
+        public virtual void tickPrice(int tickerId, int field, double price, TickAttrib attribs)
         {
-            Console.WriteLine("Tick Price. Ticker Id:" + tickerId + ", Field: " + field + ", Price: " + price + ", CanAutoExecute: " + canAutoExecute);
+            Console.WriteLine("Tick Price. Ticker Id:" + tickerId + ", Field: " + field + ", Price: " + price + ", CanAutoExecute: " + attribs.CanAutoExecute +
+                ", PastLimit: " + attribs.PastLimit + ", PreOpen: " + attribs.PreOpen);
         }
         //! [tickprice]
 
@@ -517,10 +520,12 @@ namespace TWSHelper
         }
         //! [nextvalidid]
 
-        public virtual void deltaNeutralValidation(int reqId, UnderComp underComp)
+        //! [deltaneutralvalidation]
+        public virtual void deltaNeutralValidation(int reqId, DeltaNeutralContract deltaNeutralContract)
         {
-            Console.WriteLine("DeltaNeutralValidation. " + reqId + ", ConId: " + underComp.ConId + ", Delta: " + underComp.Delta + ", Price: " + underComp.Price);
+            Console.WriteLine("DeltaNeutralValidation. " + reqId + ", ConId: " + deltaNeutralContract.ConId + ", Delta: " + deltaNeutralContract.Delta + ", Price: " + deltaNeutralContract.Price);
         }
+        //! [deltaneutralvalidation]
 
         //! [managedaccounts]
         public virtual void managedAccounts(string accountsList)
@@ -583,10 +588,10 @@ namespace TWSHelper
         //! [accountdownloadend]
 
         //! [orderstatus]
-        public virtual void orderStatus(int orderId, string status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld)
+        public virtual void orderStatus(int orderId, string status, double filled, double remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, string whyHeld, double mktCapPrice)
         {
             string result = "Status: " + status + ", Filled" + filled + ", Remaining: " + remaining
-                + ", AvgFillPrice: " + avgFillPrice + ", PermId: " + permId + ", ParentId: " + parentId + ", LastFillPrice: " + lastFillPrice + ", ClientId: " + clientId + ", WhyHeld: " + whyHeld;
+                + ", AvgFillPrice: " + avgFillPrice + ", PermId: " + permId + ", ParentId: " + parentId + ", LastFillPrice: " + lastFillPrice + ", ClientId: " + clientId + ", WhyHeld: " + whyHeld + ", MktCapPrice: " + mktCapPrice;
             if (orderInfo.ContainsKey(orderId))
             {
                 orderInfo[orderId] = result;
@@ -619,9 +624,108 @@ namespace TWSHelper
         //! [contractdetails]
         public virtual void contractDetails(int reqId, ContractDetails contractDetails)
         {
-            Console.WriteLine("ContractDetails. ReqId: " + reqId + " - " + contractDetails.Summary.Symbol + ", " + contractDetails.Summary.SecType + ", ConId: " + contractDetails.Summary.ConId + " @ " + contractDetails.Summary.Exchange);
+            //Console.WriteLine("ContractDetails. ReqId: " + reqId + " - " + contractDetails.Summary.Symbol + ", " + contractDetails.Summary.SecType + ", ConId: " + contractDetails.Summary.ConId + " @ " + contractDetails.Summary.Exchange);
+            Console.WriteLine("ContractDetails begin. ReqId: " + reqId);
+            printContractMsg(contractDetails.Contract);
+            printContractDetailsMsg(contractDetails);
+            Console.WriteLine("ContractDetails end. ReqId: " + reqId);
         }
         //! [contractdetails]
+
+        public void printContractMsg(Contract contract)
+        {
+            Console.WriteLine("\tConId: " + contract.ConId);
+            Console.WriteLine("\tSymbol: " + contract.Symbol);
+            Console.WriteLine("\tSecType: " + contract.SecType);
+            Console.WriteLine("\tLastTradeDateOrContractMonth: " + contract.LastTradeDateOrContractMonth);
+            Console.WriteLine("\tStrike: " + contract.Strike);
+            Console.WriteLine("\tRight: " + contract.Right);
+            Console.WriteLine("\tMultiplier: " + contract.Multiplier);
+            Console.WriteLine("\tExchange: " + contract.Exchange);
+            Console.WriteLine("\tPrimaryExchange: " + contract.PrimaryExch);
+            Console.WriteLine("\tCurrency: " + contract.Currency);
+            Console.WriteLine("\tLocalSymbol: " + contract.LocalSymbol);
+            Console.WriteLine("\tTradingClass: " + contract.TradingClass);
+        }
+
+        public void printContractDetailsMsg(ContractDetails contractDetails)
+        {
+            Console.WriteLine("\tMarketName: " + contractDetails.MarketName);
+            Console.WriteLine("\tMinTick: " + contractDetails.MinTick);
+            Console.WriteLine("\tPriceMagnifier: " + contractDetails.PriceMagnifier);
+            Console.WriteLine("\tOrderTypes: " + contractDetails.OrderTypes);
+            Console.WriteLine("\tValidExchanges: " + contractDetails.ValidExchanges);
+            Console.WriteLine("\tUnderConId: " + contractDetails.UnderConId);
+            Console.WriteLine("\tLongName: " + contractDetails.LongName);
+            Console.WriteLine("\tContractMonth: " + contractDetails.ContractMonth);
+            Console.WriteLine("\tIndystry: " + contractDetails.Industry);
+            Console.WriteLine("\tCategory: " + contractDetails.Category);
+            Console.WriteLine("\tSubCategory: " + contractDetails.Subcategory);
+            Console.WriteLine("\tTimeZoneId: " + contractDetails.TimeZoneId);
+            Console.WriteLine("\tTradingHours: " + contractDetails.TradingHours);
+            Console.WriteLine("\tLiquidHours: " + contractDetails.LiquidHours);
+            Console.WriteLine("\tEvRule: " + contractDetails.EvRule);
+            Console.WriteLine("\tEvMultiplier: " + contractDetails.EvMultiplier);
+            Console.WriteLine("\tMdSizeMultiplier: " + contractDetails.MdSizeMultiplier);
+            Console.WriteLine("\tAggGroup: " + contractDetails.AggGroup);
+            Console.WriteLine("\tUnderSymbol: " + contractDetails.UnderSymbol);
+            Console.WriteLine("\tUnderSecType: " + contractDetails.UnderSecType);
+            Console.WriteLine("\tMarketRuleIds: " + contractDetails.MarketRuleIds);
+            Console.WriteLine("\tRealExpirationDate: " + contractDetails.RealExpirationDate);
+            Console.WriteLine("\tLastTradeTime: " + contractDetails.LastTradeTime);
+            printContractDetailsSecIdList(contractDetails.SecIdList);
+        }
+
+        public void printContractDetailsSecIdList(List<TagValue> secIdList)
+        {
+            if (secIdList != null && secIdList.Count > 0)
+            {
+                Console.Write("\tSecIdList: {");
+                foreach (TagValue tagValue in secIdList)
+                {
+                    Console.Write(tagValue.Tag + "=" + tagValue.Value + ";");
+                }
+                Console.WriteLine("}");
+            }
+        }
+
+        public void printBondContractDetailsMsg(ContractDetails contractDetails)
+        {
+            Console.WriteLine("\tSymbol: " + contractDetails.Contract.Symbol);
+            Console.WriteLine("\tSecType: " + contractDetails.Contract.SecType);
+            Console.WriteLine("\tCusip: " + contractDetails.Cusip);
+            Console.WriteLine("\tCoupon: " + contractDetails.Coupon);
+            Console.WriteLine("\tMaturity: " + contractDetails.Maturity);
+            Console.WriteLine("\tIssueDate: " + contractDetails.IssueDate);
+            Console.WriteLine("\tRatings: " + contractDetails.Ratings);
+            Console.WriteLine("\tBondType: " + contractDetails.BondType);
+            Console.WriteLine("\tCouponType: " + contractDetails.CouponType);
+            Console.WriteLine("\tConvertible: " + contractDetails.Convertible);
+            Console.WriteLine("\tCallable: " + contractDetails.Callable);
+            Console.WriteLine("\tPutable: " + contractDetails.Putable);
+            Console.WriteLine("\tDescAppend: " + contractDetails.DescAppend);
+            Console.WriteLine("\tExchange: " + contractDetails.Contract.Exchange);
+            Console.WriteLine("\tCurrency: " + contractDetails.Contract.Currency);
+            Console.WriteLine("\tMarketName: " + contractDetails.MarketName);
+            Console.WriteLine("\tTradingClass: " + contractDetails.Contract.TradingClass);
+            Console.WriteLine("\tConId: " + contractDetails.Contract.ConId);
+            Console.WriteLine("\tMinTick: " + contractDetails.MinTick);
+            Console.WriteLine("\tMdSizeMultiplier: " + contractDetails.MdSizeMultiplier);
+            Console.WriteLine("\tOrderTypes: " + contractDetails.OrderTypes);
+            Console.WriteLine("\tValidExchanges: " + contractDetails.ValidExchanges);
+            Console.WriteLine("\tNextOptionDate: " + contractDetails.NextOptionDate);
+            Console.WriteLine("\tNextOptionType: " + contractDetails.NextOptionType);
+            Console.WriteLine("\tNextOptionPartial: " + contractDetails.NextOptionPartial);
+            Console.WriteLine("\tNotes: " + contractDetails.Notes);
+            Console.WriteLine("\tLong Name: " + contractDetails.LongName);
+            Console.WriteLine("\tEvRule: " + contractDetails.EvRule);
+            Console.WriteLine("\tEvMultiplier: " + contractDetails.EvMultiplier);
+            Console.WriteLine("\tAggGroup: " + contractDetails.AggGroup);
+            Console.WriteLine("\tMarketRuleIds: " + contractDetails.MarketRuleIds);
+            Console.WriteLine("\tLastTradeTime: " + contractDetails.LastTradeTime);
+            Console.WriteLine("\tTimeZoneId: " + contractDetails.TimeZoneId);
+            printContractDetailsSecIdList(contractDetails.SecIdList);
+        }
 
         //! [contractdetailsend]
         public virtual void contractDetailsEnd(int reqId)
@@ -661,9 +765,9 @@ namespace TWSHelper
         //! [fundamentaldata]
 
         //! [historicaldata]
-        public virtual void historicalData(int reqId, string date, double open, double high, double low, double close, int volume, int count, double WAP, bool hasGaps)
+        public virtual void historicalData(int reqId, Bar bar)
         {
-            Console.WriteLine("HistoricalData. " + reqId + " - Date: " + date + ", Open: " + open + ", High: " + high + ", Low: " + low + ", Close: " + close + ", Volume: " + volume + ", Count: " + count + ", WAP: " + WAP + ", HasGaps: " + hasGaps);
+            Console.WriteLine("HistoricalData. " + reqId + " - Time: " + bar.Time + ", Open: " + bar.Open + ", High: " + bar.High + ", Low: " + bar.Low + ", Close: " + bar.Close + ", Volume: " + bar.Volume + ", Count: " + bar.Count + ", WAP: " + bar.WAP);
         }
         //! [historicaldata]
 
@@ -730,7 +834,7 @@ namespace TWSHelper
         //! [scannerdata]
         public virtual void scannerData(int reqId, int rank, ContractDetails contractDetails, string distance, string benchmark, string projection, string legsStr)
         {
-            Console.WriteLine("ScannerData. " + reqId + " - Rank: " + rank + ", Symbol: " + contractDetails.Summary.Symbol + ", SecType: " + contractDetails.Summary.SecType + ", Currency: " + contractDetails.Summary.Currency
+            Console.WriteLine("ScannerData. " + reqId + " - Rank: " + rank + ", Symbol: " + contractDetails.Contract.Symbol + ", SecType: " + contractDetails.Contract.SecType + ", Currency: " + contractDetails.Contract.Currency
                 + ", Distance: " + distance + ", Benchmark: " + benchmark + ", Projection: " + projection + ", Legs String: " + legsStr);
         }
         //! [scannerdata]
@@ -751,7 +855,9 @@ namespace TWSHelper
 
         public virtual void bondContractDetails(int requestId, ContractDetails contractDetails)
         {
-            Console.WriteLine("Bond. Symbol " + contractDetails.Summary.Symbol + ", " + contractDetails.Summary);
+            Console.WriteLine("BondContractDetails begin. ReqId: " + requestId);
+            printBondContractDetailsMsg(contractDetails);
+            Console.WriteLine("BondContractDetails end. ReqId: " + requestId);
         }
 
         //! [historicaldataend]
@@ -852,5 +958,247 @@ namespace TWSHelper
                 Console.WriteLine(tier.DisplayName);
             }
         }
+
+        //! [familyCodes]
+        public void familyCodes(FamilyCode[] familyCodes)
+        {
+            Console.WriteLine("Family Codes:");
+
+            foreach (var familyCode in familyCodes)
+            {
+                Console.WriteLine("Account ID: {0}, Family Code Str: {1}", familyCode.AccountID, familyCode.FamilyCodeStr);
+            }
+        }
+        //! [familyCodes]
+
+        //! [symbolSamples]
+        public void symbolSamples(int reqId, ContractDescription[] contractDescriptions)
+        {
+            string derivSecTypes;
+            Console.WriteLine("Symbol Samples. Request Id: {0}", reqId);
+
+            foreach (var contractDescription in contractDescriptions)
+            {
+                derivSecTypes = "";
+                foreach (var derivSecType in contractDescription.DerivativeSecTypes)
+                {
+                    derivSecTypes += derivSecType;
+                    derivSecTypes += " ";
+                }
+                Console.WriteLine("Contract: conId - {0}, symbol - {1}, secType - {2}, primExchange - {3}, currency - {4}, derivativeSecTypes - {5}",
+                    contractDescription.Contract.ConId, contractDescription.Contract.Symbol, contractDescription.Contract.SecType,
+                    contractDescription.Contract.PrimaryExch, contractDescription.Contract.Currency, derivSecTypes);
+            }
+        }
+        //! [symbolSamples]
+
+        //! [mktDepthExchanges]
+        public void mktDepthExchanges(DepthMktDataDescription[] depthMktDataDescriptions)
+        {
+            Console.WriteLine("Market Depth Exchanges:");
+
+            foreach (var depthMktDataDescription in depthMktDataDescriptions)
+            {
+                Console.WriteLine("Depth Market Data Description: Exchange: {0}, Security Type: {1}, Listing Exch: {2}, Service Data Type: {3}, Agg Group: {4}",
+                    depthMktDataDescription.Exchange, depthMktDataDescription.SecType,
+                    depthMktDataDescription.ListingExch, depthMktDataDescription.ServiceDataType,
+                    depthMktDataDescription.AggGroup != Int32.MaxValue ? depthMktDataDescription.AggGroup.ToString() : ""
+                    );
+            }
+        }
+        //! [mktDepthExchanges]
+
+        //! [tickNews]
+        public void tickNews(int tickerId, long timeStamp, string providerCode, string articleId, string headline, string extraData)
+        {
+            Console.WriteLine("Tick News. Ticker Id: {0}, Time Stamp: {1}, Provider Code: {2}, Article Id: {3}, headline: {4}, extraData: {5}", tickerId, timeStamp, providerCode, articleId, headline, extraData);
+        }
+        //! [tickNews]
+
+        //! [smartcomponents]
+        public void smartComponents(int reqId, Dictionary<int, KeyValuePair<string, char>> theMap)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat("==== Smart Components Begin (total={0}) reqId = {1} ====\n", theMap.Count, reqId);
+
+            foreach (var item in theMap)
+            {
+                sb.AppendFormat("bit number: {0}, exchange: {1}, exchange letter: {2}\n", item.Key, item.Value.Key, item.Value.Value);
+            }
+
+            sb.AppendFormat("==== Smart Components Begin (total={0}) reqId = {1} ====\n", theMap.Count, reqId);
+
+            Console.WriteLine(sb);
+        }
+        //! [smartcomponents]
+
+        //! [tickReqParams]
+        public void tickReqParams(int tickerId, double minTick, string bboExchange, int snapshotPermissions)
+        {
+            Console.WriteLine("id={0} minTick = {1} bboExchange = {2} snapshotPermissions = {3}", tickerId, minTick, bboExchange, snapshotPermissions);
+
+            BboExchange = bboExchange;
+        }
+        //! [tickReqParams]
+
+        //! [newsProviders]
+        public void newsProviders(NewsProvider[] newsProviders)
+        {
+            Console.WriteLine("News Providers:");
+
+            foreach (var newsProvider in newsProviders)
+            {
+                Console.WriteLine("News provider: providerCode - {0}, providerName - {1}",
+                    newsProvider.ProviderCode, newsProvider.ProviderName);
+            }
+        }
+        //! [newsProviders]
+
+        //! [newsArticle]
+        public void newsArticle(int requestId, int articleType, string articleText)
+        {
+            Console.WriteLine("News Article. Request Id: {0}, ArticleType: {1}", requestId, articleType);
+            if (articleType == 0)
+            {
+                Console.WriteLine("News Article Text: {0}", articleText);
+            }
+            else if (articleType == 1)
+            {
+                Console.WriteLine("News Article Text: article text is binary/pdf and cannot be displayed");
+            }
+        }
+        //! [newsArticle]
+
+        //! [historicalNews]
+        public void historicalNews(int requestId, string time, string providerCode, string articleId, string headline)
+        {
+            Console.WriteLine("Historical News. Request Id: {0}, Time: {1}, Provider Code: {2}, Article Id: {3}, headline: {4}", requestId, time, providerCode, articleId, headline);
+        }
+        //! [historicalNews]
+
+        //! [historicalNewsEnd]
+        public void historicalNewsEnd(int requestId, bool hasMore)
+        {
+            Console.WriteLine("Historical News End. Request Id: {0}, Has More: {1}", requestId, hasMore);
+        }
+        //! [historicalNewsEnd]
+
+        //! [headTimestamp]
+        public void headTimestamp(int reqId, string headTimestamp)
+        {
+            Console.WriteLine("Head time stamp. Request Id: {0}, Head time stamp: {1}", reqId, headTimestamp);
+        }
+        //! [headTimestamp]
+
+        //! [histogramData]
+        public void histogramData(int reqId, HistogramEntry[] data)
+        {
+            Console.WriteLine("Histogram data. Request Id: {0}, data size: {1}", reqId, data.Length);
+            data.ToList().ForEach(i => Console.WriteLine("\tPrice: {0}, Size: {1}", i.Price, i.Size));
+        }
+        //! [histogramData]
+
+        //! [historicalDataUpdate]
+        public void historicalDataUpdate(int reqId, Bar bar)
+        {
+            Console.WriteLine("HistoricalDataUpdate. " + reqId + " - Time: " + bar.Time + ", Open: " + bar.Open + ", High: " + bar.High + ", Low: " + bar.Low + ", Close: " + bar.Close + ", Volume: " + bar.Volume + ", Count: " + bar.Count + ", WAP: " + bar.WAP);
+        }
+        //! [historicalDataUpdate]
+
+        //! [rerouteMktDataReq]
+        public void rerouteMktDataReq(int reqId, int conId, string exchange)
+        {
+            Console.WriteLine("Re-route market data request. Req Id: {0}, ConId: {1}, Exchange: {2}", reqId, conId, exchange);
+        }
+        //! [rerouteMktDataReq]
+
+        //! [rerouteMktDepthReq]
+        public void rerouteMktDepthReq(int reqId, int conId, string exchange)
+        {
+            Console.WriteLine("Re-route market depth request. Req Id: {0}, ConId: {1}, Exchange: {2}", reqId, conId, exchange);
+        }
+        //! [rerouteMktDepthReq]
+
+        //! [marketRule]
+        public void marketRule(int marketRuleId, PriceIncrement[] priceIncrements)
+        {
+            Console.WriteLine("Market Rule Id: " + marketRuleId);
+            foreach (var priceIncrement in priceIncrements)
+            {
+                Console.WriteLine("Low Edge: {0}, Increment: {1}", ((decimal)priceIncrement.LowEdge).ToString(), ((decimal)priceIncrement.Increment).ToString());
+            }
+        }
+        //! [marketRule]
+
+        //! [pnl]
+        public void pnl(int reqId, double dailyPnL, double unrealizedPnL, double realizedPnL)
+        {
+            Console.WriteLine("PnL. Request Id: {0}, Daily PnL: {1}, Unrealized PnL: {2}, Realized PnL: {3}", reqId, dailyPnL, unrealizedPnL, realizedPnL);
+        }
+        //! [pnl]
+
+        //! [pnlsingle]
+        public void pnlSingle(int reqId, int pos, double dailyPnL, double unrealizedPnL, double realizedPnL, double value)
+        {
+            Console.WriteLine("PnL Single. Request Id: {0}, Pos {1}, Daily PnL {2}, Unrealized PnL {3}, Realized PnL: {4}, Value: {5}", reqId, pos, dailyPnL, unrealizedPnL, realizedPnL, value);
+        }
+        //! [pnlsingle]
+
+        //! [historicalticks]
+        public void historicalTicks(int reqId, HistoricalTick[] ticks, bool done)
+        {
+            foreach (var tick in ticks)
+            {
+                Console.WriteLine("Historical Tick. Request Id: {0}, Time: {1}, Price: {2}, Size: {3}", reqId, Util.UnixSecondsToString(tick.Time, "yyyyMMdd-HH:mm:ss zzz"), tick.Price, tick.Size);
+            }
+        }
+        //! [historicalticks]
+
+        //! [historicalticksbidask]
+        public void historicalTicksBidAsk(int reqId, HistoricalTickBidAsk[] ticks, bool done)
+        {
+            foreach (var tick in ticks)
+            {
+                Console.WriteLine("Historical Tick Bid/Ask. Request Id: {0}, Time: {1}, Mask: {2} Price Bid: {3}, Price Ask {4}, Size Bid: {5}, Size Ask {6}",
+                    reqId, Util.UnixSecondsToString(tick.Time, "yyyyMMdd-HH:mm:ss zzz"), tick.Mask, tick.PriceBid, tick.PriceAsk, tick.SizeBid, tick.SizeAsk);
+            }
+        }
+        //! [historicalticksbidask]
+
+        //! [historicaltickslast]
+        public void historicalTicksLast(int reqId, HistoricalTickLast[] ticks, bool done)
+        {
+            foreach (var tick in ticks)
+            {
+                Console.WriteLine("Historical Tick Last. Request Id: {0}, Time: {1}, Mask: {2}, Price: {3}, Size: {4}, Exchange: {5}, Special Conditions: {6}",
+                    reqId, Util.UnixSecondsToString(tick.Time, "yyyyMMdd-HH:mm:ss zzz"), tick.Mask, tick.Price, tick.Size, tick.Exchange, tick.SpecialConditions);
+            }
+        }
+        //! [historicaltickslast]
+
+        //! [tickbytickalllast]
+        public void tickByTickAllLast(int reqId, int tickType, long time, double price, int size, TickAttrib attribs, string exchange, string specialConditions)
+        {
+            Console.WriteLine("Tick-By-Tick. Request Id: {0}, TickType: {1}, Time: {2}, Price: {3}, Size: {4}, Exchange: {5}, Special Conditions: {6}, PastLimit: {7}, Unreported: {8}",
+                reqId, tickType == 1 ? "Last" : "AllLast", Util.UnixSecondsToString(time, "yyyyMMdd-HH:mm:ss zzz"), price, size, exchange, specialConditions, attribs.PastLimit, attribs.Unreported);
+        }
+        //! [tickbytickalllast]
+
+        //! [tickbytickbidask]
+        public void tickByTickBidAsk(int reqId, long time, double bidPrice, double askPrice, int bidSize, int askSize, TickAttrib attribs)
+        {
+            Console.WriteLine("Tick-By-Tick. Request Id: {0}, TickType: BidAsk, Time: {1}, BidPrice: {2}, AskPrice: {3}, BidSize: {4}, AskSize: {5}, BidPastLow: {6}, AskPastHigh: {7}",
+                reqId, Util.UnixSecondsToString(time, "yyyyMMdd-HH:mm:ss zzz"), bidPrice, askPrice, bidSize, askSize, attribs.BidPastLow, attribs.AskPastHigh);
+        }
+        //! [tickbytickbidask]
+
+        //! [tickbytickmidpoint]
+        public void tickByTickMidPoint(int reqId, long time, double midPoint)
+        {
+            Console.WriteLine("Tick-By-Tick. Request Id: {0}, TickType: MidPoint, Time: {1}, MidPoint: {2}",
+                reqId, Util.UnixSecondsToString(time, "yyyyMMdd-HH:mm:ss zzz"), midPoint);
+        }
+        //! [tickbytickmidpoint]
     }
 }
