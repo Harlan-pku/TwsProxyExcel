@@ -382,6 +382,8 @@ namespace TWSHelper
         private Dictionary<int, string> orderErrorInfo = new Dictionary<int, string>();
         public Dictionary<int, OrderStatusReturnStruct> orderInfoDetail = new Dictionary<int, OrderStatusReturnStruct>();
         public Dictionary<string, Tuple<Contract, Execution, int>> executions = new Dictionary<string, Tuple<Contract, Execution, int>>();
+        public List<Tuple<int, int, string>> errorList = new List<Tuple<int, int, string>>();
+        public List<Tuple<int, int, string>> tmpErrorList = new List<Tuple<int, int, string>>();
         public string posInfo = "";
         private string tmpPosInfo = "";
         public bool posInfoReady = false;
@@ -434,6 +436,25 @@ namespace TWSHelper
             return ans.Substring(0, ans.Length - 1);
         }
 
+        public string GetErrors()
+        {
+            this.errorList.AddRange(this.tmpErrorList);
+            this.tmpErrorList.Clear();
+            if (this.errorList.Count == 0)
+                return "";
+            string ans = "";
+            foreach (var el in this.errorList)
+            {
+                ans += el.ToString() + "\n";
+            }
+            return ans.Substring(0, ans.Length - 1);
+        }
+
+        public void ClearErrors()
+        {
+            this.errorList.Clear();
+        }
+
         public int NextOrderId
         {
             get { return nextOrderId; }
@@ -445,17 +466,20 @@ namespace TWSHelper
         public virtual void error(Exception e)
         {
             Console.WriteLine("Exception thrown: " + e);
+            this.tmpErrorList.Add(new Tuple<int, int, string>(0, 0, e.ToString()));
             throw e;
         }
 
         public virtual void error(string str)
         {
+            this.tmpErrorList.Add(new Tuple<int, int, string>(0, 0, str));
             Console.WriteLine("Error: " + str + "\n");
         }
 
         //! [error]
         public virtual void error(int id, int errorCode, string errorMsg)
         {
+            this.tmpErrorList.Add(new Tuple<int, int, string>(id, errorCode, errorMsg));
             Console.WriteLine("Error. Id: " + id + ", Code: " + errorCode + ", Msg: " + errorMsg + "\n");
         }
         //! [error]
@@ -810,7 +834,10 @@ namespace TWSHelper
         //! [positionend]
         public virtual void positionEnd()
         {
-            this.posInfo = this.tmpPosInfo.Substring(0, tmpPosInfo.Length - 1);
+            if (this.tmpPosInfo.Length > 0)
+                this.posInfo = this.tmpPosInfo.Substring(0, tmpPosInfo.Length - 1);
+            else
+                this.posInfo = this.tmpPosInfo;
             this.tmpPosInfo = "";
             this.posInfoReady = true;
             //Console.WriteLine("PositionEnd \n");

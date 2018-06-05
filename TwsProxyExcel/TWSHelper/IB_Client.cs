@@ -283,6 +283,16 @@ namespace TWSHelper
             return wrapper.GetExecutions();
         }
 
+        public string getErrors()
+        {
+            return wrapper.GetErrors();
+        }
+
+        public void clearErrors()
+        {
+            wrapper.ClearErrors();
+        }
+
         public void reqTodayExecutions()
         {
             wrapper.ClientSocket.reqExecutions(1, new ExecutionFilter());
